@@ -23,8 +23,8 @@ solution_t *createRandomSolution() {
   order[n] = 0;
 
   for (int i = 0; i < n*log(n); i++) {
-    int a = disI(generator) % (n - 1) + 1;
-    int b = disI(generator) % (n - 1) + 1;
+    int a = disI(generator);
+    int b = disI(generator);
     int temp = order[a];
     order[a] = order[b];
     order[b] = temp;
