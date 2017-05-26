@@ -172,4 +172,12 @@ void search() {
   // not implemented yet
   // mutation();
   // selection();
+
+  delete[] check1;
+  delete[] check2;
+  for (int i = 0; i < arraySize; i++) {
+    delete[] population[i]->order;
+    delete population[i];
+  }
+  delete[] population;
 }
