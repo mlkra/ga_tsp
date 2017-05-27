@@ -11,6 +11,7 @@ using namespace std;
 
 uniform_int_distribution<int> disI;
 uniform_int_distribution<int> disI2;
+uniform_int_distribution<int> disI3;
 uniform_real_distribution<double> disD(0.0, 1.0);
 
 // size of population
@@ -55,6 +56,7 @@ void initializeSearch() {
   // TODO change to something more dynamic
   populationSize = 10;
   disI2.param(uniform_int_distribution<>::param_type{0, populationSize - 1});
+  disI3.param(uniform_int_distribution<>::param_type{1, n-1});
   pairs = 4;
   arraySize = (populationSize << 1) + (pairs << 2);
   mutationP = 0.05;
@@ -73,6 +75,23 @@ void initializeSearch() {
     solution->value = 0;
     population[i] = solution;
   }
+}
+
+inline permutation_t generatePermutation() {
+  int a = disI3(generator);
+  int b = disI3(generator);
+  while (a == b) {
+    b = disI3(generator);
+  }
+  permutation_t permutation;
+  if (a > b) {
+    permutation.a = b;
+    permutation.b = a;
+  } else {
+    permutation.a = a;
+    permutation.b = b;
+  }
+  return permutation;
 }
 
 void crossover() {
@@ -155,6 +174,23 @@ void crossover() {
   }
 }
 
+int mutation() {
+  int mutated = 0;
+
+  int n = populationSize + (pairs << 1);
+  for (int i = 0; i < n; i++) {
+    if (disD(generator) < mutationP) {
+      permutation_t permutation = generatePermutation();
+      memcpy(population[n + mutated]->order, population[i]->order, sizeof(int) * (n + 1));
+      population[n + mutated]->value = calculateNeighbourDistance(*population[i], permutation);
+      swap(population[n + mutated], permutation);
+      mutated++;
+    }
+  }
+
+  return mutated;
+}
+
 void search() {
   // add some for loop
 
@@ -170,7 +206,17 @@ void search() {
     cout << endl;
   }
   // not implemented yet
-  // mutation();
+  int mutated = mutation();
+
+  // DEBUG
+  for (int i = populationSize + (pairs << 1); i < populationSize + (pairs << 1) + mutated; i++) {
+    for (int j = 0; j <= n; j++) {
+      cout << population[i]->order[j] + 1 << " ";
+    }
+    cout << population[i]->value;
+    cout << endl;
+  }
+
   // selection();
 
   delete[] check1;
