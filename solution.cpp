@@ -36,8 +36,8 @@ solution_t *createRandomSolution() {
   return solution;
 }
 
-solution_t createNEHSolution() {
-  solution_t solution;
+solution_t *createNEHSolution() {
+  solution_t *solution = new solution_t;
   double value = 0;
   int *order = new int[n + 1];
   memset(order, -1, (n + 1) * sizeof(int));
@@ -61,8 +61,8 @@ solution_t createNEHSolution() {
     value += min;
   }
 
-  solution.order = order;
-  solution.value = value;
+  solution->order = order;
+  solution->value = value;
   return solution;
 }
 

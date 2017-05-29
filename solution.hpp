@@ -14,7 +14,7 @@ typedef struct {
 extern std::mt19937 generator;
 
 solution_t *createRandomSolution();
-solution_t createNEHSolution();
+solution_t *createNEHSolution();
 double calculateDistance(solution_t solution);
 double calculateDistance2(solution_t solution);
 double calculateNeighbourDistance(solution_t solution, permutation_t permutation);

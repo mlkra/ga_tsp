@@ -6,6 +6,7 @@
 #include <iostream>
 #include <csignal>
 #include <cstring>
+#include <algorithm>
 
 using namespace std;
 
@@ -57,14 +58,15 @@ void initializeSearch() {
   populationSize = 10;
   disI2.param(uniform_int_distribution<>::param_type{0, populationSize - 1});
   disI3.param(uniform_int_distribution<>::param_type{1, n-1});
-  pairs = 4;
+  pairs = 5;
   arraySize = (populationSize << 1) + (pairs << 2);
   mutationP = 0.05;
   check1 = new bool[n];
   check2 = new bool[n];
-  theBestSolution = createNEHSolution();
   population = new solution_t*[arraySize];
-  for (int i = 0; i < populationSize; i++) {
+  population[0] = createNEHSolution();
+  cout << population[0]->value << endl;
+  for (int i = 1; i < populationSize; i++) {
     population[i] = createRandomSolution();
   }
   for (int i = populationSize; i < arraySize; i++) {
@@ -174,50 +176,52 @@ void crossover() {
   }
 }
 
-int mutation() {
-  int mutated = 0;
-
+void mutation() {
   int n = populationSize + (pairs << 1);
   for (int i = 0; i < n; i++) {
     if (disD(generator) < mutationP) {
       permutation_t permutation = generatePermutation();
-      memcpy(population[n + mutated]->order, population[i]->order, sizeof(int) * (n + 1));
-      population[n + mutated]->value = calculateNeighbourDistance(*population[i], permutation);
-      swap(population[n + mutated], permutation);
-      mutated++;
+      double distance = calculateNeighbourDistance(*population[i], permutation);
+      if (population[i]->value > distance) {
+        population[i]->value = distance;
+        swap(population[i], permutation);
+      }
     }
   }
+}
 
-  return mutated;
+void selection() {
+    random_shuffle(population, population + 20);
+
+    for (int i = 0; i < 10; i++) {
+      if (population[(i << 1)]->value < population[(i << 1) + 1]->value) {
+        solution_t *temp = population[i];
+        population[i] = population[(i << 1)];
+        population[(i << 1)] = temp;
+      } else {
+        solution_t *temp = population[i];
+        population[i] = population[(i << 1) + 1];
+        population[(i << 1) + 1] = temp;
+      }
+    }
 }
 
 void search() {
   // add some for loop
-
-  // finish implementing
-  crossover();
+  for (int i = 0; i < 10000; i++) {
+    crossover();
+    mutation();
+    selection();
+  }
 
   // DEBUG
-  for (int i = 0; i < populationSize + (pairs << 1); i++) {
+  for (int i = 0; i < populationSize; i++) {
     for (int j = 0; j <= n; j++) {
       cout << population[i]->order[j] + 1 << " ";
     }
     cout << population[i]->value;
     cout << endl;
   }
-  // not implemented yet
-  int mutated = mutation();
-
-  // DEBUG
-  for (int i = populationSize + (pairs << 1); i < populationSize + (pairs << 1) + mutated; i++) {
-    for (int j = 0; j <= n; j++) {
-      cout << population[i]->order[j] + 1 << " ";
-    }
-    cout << population[i]->value;
-    cout << endl;
-  }
-
-  // selection();
 
   delete[] check1;
   delete[] check2;
