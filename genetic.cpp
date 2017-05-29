@@ -29,15 +29,24 @@ bool *check1;
 bool *check2;
 
 solution_t **population;
-solution_t theBestSolution;
+
+solution_t *findBestSolution() {
+  solution_t *bestSolution = population[0];
+  for (int i = 1; i < populationSize; i++) {
+    if (bestSolution->value > population[i]->value) {
+      bestSolution = population[i];
+    }
+  }
+  return bestSolution;
+}
 
 void printResult() {
-  cout << calculateDistance(theBestSolution) << endl;
+  solution_t *theBestSolution = findBestSolution();
+  cout << calculateDistance(*theBestSolution) << endl;
   for (int i = 0; i <= n; i++) {
-    cerr << theBestSolution.order[i] + 1 << " ";
+    cerr << theBestSolution->order[i] + 1 << " ";
   }
   cerr << endl;
-  delete[] theBestSolution.order;
 }
 
 void handler(int signum) {
@@ -54,12 +63,12 @@ void setupHandler() {
 void initializeSearch() {
   calculateDistances();
   disI.param(uniform_int_distribution<>::param_type{2, n-2});
-  // TODO change to something more dynamic
-  populationSize = 10;
+  // TODO change to something more dynamic or don't
+  populationSize = 30;
   disI2.param(uniform_int_distribution<>::param_type{0, populationSize - 1});
   disI3.param(uniform_int_distribution<>::param_type{1, n-1});
-  pairs = 5;
-  arraySize = (populationSize << 1) + (pairs << 2);
+  pairs = populationSize * 1.5;
+  arraySize = populationSize + (pairs << 1);
   mutationP = 0.05;
   check1 = new bool[n];
   check2 = new bool[n];
@@ -171,14 +180,13 @@ void crossover() {
       }
     }
   }
-  for (int i = populationSize; i < populationSize + (pairs << 1); i++) {
+  for (int i = populationSize; i < arraySize; i++) {
     population[i]->value = calculateDistance(*population[i]);
   }
 }
 
 void mutation() {
-  int n = populationSize + (pairs << 1);
-  for (int i = 0; i < n; i++) {
+  for (int i = 0; i < arraySize; i++) {
     if (disD(generator) < mutationP) {
       permutation_t permutation = generatePermutation();
       double distance = calculateNeighbourDistance(*population[i], permutation);
@@ -191,9 +199,21 @@ void mutation() {
 }
 
 void selection() {
-    random_shuffle(population, population + 20);
+    random_shuffle(population, population + 40);
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < (arraySize >> 1); i++) {
+      if (population[(i << 1)]->value < population[(i << 1) + 1]->value) {
+        solution_t *temp = population[i];
+        population[i] = population[(i << 1)];
+        population[(i << 1)] = temp;
+      } else {
+        solution_t *temp = population[i];
+        population[i] = population[(i << 1) + 1];
+        population[(i << 1) + 1] = temp;
+      }
+    }
+
+    for (int i = 0; i < (arraySize >> 2); i++) {
       if (population[(i << 1)]->value < population[(i << 1) + 1]->value) {
         solution_t *temp = population[i];
         population[i] = population[(i << 1)];
@@ -215,13 +235,15 @@ void search() {
   }
 
   // DEBUG
-  for (int i = 0; i < populationSize; i++) {
+  for (int i = 0; i < arraySize; i++) {
     for (int j = 0; j <= n; j++) {
       cout << population[i]->order[j] + 1 << " ";
     }
     cout << population[i]->value;
     cout << endl;
   }
+
+  printResult();
 
   delete[] check1;
   delete[] check2;
