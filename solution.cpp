@@ -36,7 +36,37 @@ solution_t *createRandomSolution() {
   return solution;
 }
 
-solution_t *createNEHSolution() {
+solution_t createNEHSolution() {
+  solution_t solution;
+  double value = 0;
+  int *order = new int[n + 1];
+  memset(order, -1, (n + 1) * sizeof(int));
+  order[0] = 0; order[1] = 1; order[2] = 0;
+  value += getDistance(0, 1) * 2;
+
+  for (int i = 2; i < n; i++) {
+    double min = FLT_MAX;
+    int minPos;
+    for (int j = 1; j <= i; j++) {
+      double distance = getDistance(order[j-1], i) + getDistance(i, order[j]) - getDistance(order[j-1], order[j]);
+      if (distance < min) {
+        min = distance;
+        minPos = j;
+      }
+    }
+    for (int j = n; j > minPos; j--) {
+      order[j] = order[j-1];
+    }
+    order[minPos] = i;
+    value += min;
+  }
+
+  solution.order = order;
+  solution.value = value;
+  return solution;
+}
+
+solution_t *createNEHSolution2() {
   solution_t *solution = new solution_t;
   double value = 0;
   int *order = new int[n + 1];
@@ -100,4 +130,13 @@ void swap(solution_t *solution, permutation_t permutation) {
     solution->order[permutation.a+i] = solution->order[permutation.b-i];
     solution->order[permutation.b-i] = temp;
   }
+}
+
+void swap2(solution_t *dest, solution_t *src, permutation_t permutation) {
+  memcpy(dest->order, src->order, (permutation.a) * sizeof(int));
+  int length = permutation.b - permutation.a + 1;
+  for (int i = 0; i < length; i++) {
+    dest->order[permutation.a + i] = src->order[permutation.b - i];
+  }
+  memcpy(dest->order + permutation.b + 1, src->order + permutation.b + 1, (n + 1 - (permutation.b + 1)) * sizeof(int));
 }

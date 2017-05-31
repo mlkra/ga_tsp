@@ -19,32 +19,24 @@ uniform_real_distribution<double> disD(0.0, 1.0);
 int populationSize;
 // number of pairs for crossover
 int pairs;
+// size after crossover
+int crossoverSize;
 // size of array with species
 int arraySize;
 // probability of mutation
 double mutationP;
 
-// kelper arrays with bools
+// helper arrays with bools
 bool *check1;
 bool *check2;
 
 solution_t **population;
-
-solution_t *findBestSolution() {
-  solution_t *bestSolution = population[0];
-  for (int i = 1; i < populationSize; i++) {
-    if (bestSolution->value > population[i]->value) {
-      bestSolution = population[i];
-    }
-  }
-  return bestSolution;
-}
+solution_t theBestSolution;
 
 void printResult() {
-  solution_t *theBestSolution = findBestSolution();
-  cout << calculateDistance(*theBestSolution) << endl;
+  cout << calculateDistance(theBestSolution) << endl;
   for (int i = 0; i <= n; i++) {
-    cerr << theBestSolution->order[i] + 1 << " ";
+    cerr << theBestSolution.order[i] + 1 << " ";
   }
   cerr << endl;
 }
@@ -62,19 +54,20 @@ void setupHandler() {
 
 void initializeSearch() {
   calculateDistances();
+  theBestSolution = createNEHSolution();
+  cout << theBestSolution.value;
   disI.param(uniform_int_distribution<>::param_type{2, n-2});
   // TODO change to something more dynamic or don't
   populationSize = 30;
   disI2.param(uniform_int_distribution<>::param_type{0, populationSize - 1});
   disI3.param(uniform_int_distribution<>::param_type{1, n-1});
   pairs = populationSize * 1.5;
-  arraySize = populationSize + (pairs << 1);
+  crossoverSize = populationSize + (pairs << 1);
+  arraySize = (populationSize + (pairs << 1)) << 1;
   mutationP = 0.5;
   check1 = new bool[n];
   check2 = new bool[n];
   population = new solution_t*[arraySize];
-  // population[0] = createNEHSolution();
-  // cout << population[0]->value << endl;
   for (int i = 0; i < populationSize; i++) {
     population[i] = createRandomSolution();
   }
@@ -103,6 +96,11 @@ inline permutation_t generatePermutation() {
     permutation.b = b;
   }
   return permutation;
+}
+
+inline void copyToBest(solution_t *solution) {
+  theBestSolution.value = solution->value;
+  memcpy(theBestSolution.order, solution->order, (n + 1) * sizeof(int));
 }
 
 void crossover() {
@@ -180,58 +178,54 @@ void crossover() {
       }
     }
   }
-  for (int i = populationSize; i < arraySize; i++) {
-    population[i]->value = calculateDistance(*population[i]);
+  for (int i = populationSize; i < crossoverSize; i++) {
+    double distance = calculateDistance(*population[i]);
+    population[i]->value = distance;
+    if (distance < theBestSolution.value) {
+      copyToBest(population[i]);
+    }
   }
 }
 
-void mutation() {
-  for (int i = 0; i < arraySize; i++) {
+int mutation() {
+  int i = crossoverSize;
+  for (int j = 0; j < crossoverSize; j++) {
     if (disD(generator) < mutationP) {
       permutation_t permutation = generatePermutation();
-      double distance = calculateNeighbourDistance(*population[i], permutation);
-      if (population[i]->value > distance) {
-        population[i]->value = distance;
-        swap(population[i], permutation);
-      }
+      population[i]->value = calculateNeighbourDistance(*population[j], permutation);
+      // TODO there is a better way to do it
+      // memcpy(population[i]->order, population[j]->order, (n + 1) * sizeof(int));
+      // swap(population[i], permutation);
+      swap2(population[i], population[j], permutation);
+      i++;
     }
+  }
+  return i - crossoverSize;
+}
+
+int compare(const void* p1, const void* p2) {
+  solution_t *s1 = *(solution_t **) p1;
+  solution_t *s2 = *(solution_t **) p2;
+
+  if (s1->value < s2->value) {
+    return -1;
+  } else if (s1->value > s2->value) {
+    return 1;
+  } else {
+    return 0;
   }
 }
 
-void selection() {
-    random_shuffle(population, population + arraySize);
-
-    for (int i = 0; i < (arraySize >> 1); i++) {
-      if (population[(i << 1)]->value < population[(i << 1) + 1]->value) {
-        solution_t *temp = population[i];
-        population[i] = population[(i << 1)];
-        population[(i << 1)] = temp;
-      } else {
-        solution_t *temp = population[i];
-        population[i] = population[(i << 1) + 1];
-        population[(i << 1) + 1] = temp;
-      }
-    }
-
-    for (int i = 0; i < (arraySize >> 2); i++) {
-      if (population[(i << 1)]->value < population[(i << 1) + 1]->value) {
-        solution_t *temp = population[i];
-        population[i] = population[(i << 1)];
-        population[(i << 1)] = temp;
-      } else {
-        solution_t *temp = population[i];
-        population[i] = population[(i << 1) + 1];
-        population[(i << 1) + 1] = temp;
-      }
-    }
+void selection(int currentSize) {
+  qsort(population, currentSize, sizeof(solution_t *), compare);
 }
 
 void search() {
   // add some for loop
   for (int i = 0; i < 20000; i++) {
     crossover();
-    mutation();
-    selection();
+    int mutated = mutation();
+    selection(crossoverSize + mutated);
   }
 
   // DEBUG
