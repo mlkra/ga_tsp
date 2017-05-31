@@ -69,13 +69,13 @@ void initializeSearch() {
   disI3.param(uniform_int_distribution<>::param_type{1, n-1});
   pairs = populationSize * 1.5;
   arraySize = populationSize + (pairs << 1);
-  mutationP = 0.05;
+  mutationP = 0.5;
   check1 = new bool[n];
   check2 = new bool[n];
   population = new solution_t*[arraySize];
-  population[0] = createNEHSolution();
-  cout << population[0]->value << endl;
-  for (int i = 1; i < populationSize; i++) {
+  // population[0] = createNEHSolution();
+  // cout << population[0]->value << endl;
+  for (int i = 0; i < populationSize; i++) {
     population[i] = createRandomSolution();
   }
   for (int i = populationSize; i < arraySize; i++) {
@@ -199,7 +199,7 @@ void mutation() {
 }
 
 void selection() {
-    random_shuffle(population, population + 40);
+    random_shuffle(population, population + arraySize);
 
     for (int i = 0; i < (arraySize >> 1); i++) {
       if (population[(i << 1)]->value < population[(i << 1) + 1]->value) {
@@ -228,7 +228,7 @@ void selection() {
 
 void search() {
   // add some for loop
-  for (int i = 0; i < 10000; i++) {
+  for (int i = 0; i < 20000; i++) {
     crossover();
     mutation();
     selection();
