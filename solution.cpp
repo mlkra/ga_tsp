@@ -141,3 +141,31 @@ void swap2(solution_t *dest, solution_t *src, permutation_t permutation) {
   }
   memcpy(dest->order + permutation.b + 1, src->order + permutation.b + 1, (n + 1 - (permutation.b + 1)) * sizeof(int));
 }
+
+inline permutation_t generatePermutation(uniform_int_distribution<int> disI3) {
+  int a = disI3(generator);
+  int b = disI3(generator);
+  while (a == b) {
+    b = disI3(generator);
+  }
+  permutation_t permutation;
+  if (a > b) {
+    permutation.a = b;
+    permutation.b = a;
+  } else {
+    permutation.a = a;
+    permutation.b = b;
+  }
+  return permutation;
+}
+
+void post(solution_t *solution, std::uniform_int_distribution<int> disI3) {
+  for (int i = 0; i < 1000000; i++) {
+    permutation_t permutation = generatePermutation(disI3);
+    double distance = calculateNeighbourDistance(*solution, permutation);
+    if (distance < solution->value) {
+      solution->value = distance;
+      swap(solution, permutation);
+    }
+  }
+}

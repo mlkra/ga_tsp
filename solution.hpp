@@ -21,3 +21,4 @@ double calculateDistance2(solution_t solution);
 double calculateNeighbourDistance(solution_t solution, permutation_t permutation);
 void swap(solution_t *solution, permutation_t permutation);
 void swap2(solution_t *dest, solution_t *src, permutation_t permutation);
+void post(solution_t *solution, std::uniform_int_distribution<int> dist);
