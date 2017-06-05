@@ -68,10 +68,10 @@ inline solution_t *copyFromBest() {
 void initializeSearch() {
   calculateDistances();
   theBestSolution = createNEHSolution();
+  // TODO remove
   cout << theBestSolution.value << endl;
   cout.flush();
   disI.param(uniform_int_distribution<>::param_type{2, n-2});
-  // TODO change to something more dynamic or don't
   populationSize = 30;
   disI2.param(uniform_int_distribution<>::param_type{0, populationSize - 1});
   disI3.param(uniform_int_distribution<>::param_type{1, n-1});
@@ -254,7 +254,6 @@ void selection(int currentSize) {
     } else {
       currentSize = halfSize;
     }
-    currentSize = halfSize;
   }
   if (currentSize > populationSize) {
     qsort(population, currentSize, sizeof(solution_t *), compare);
@@ -267,7 +266,7 @@ void search() {
     crossover();
     int mutated = mutation();
     selection(crossoverSize + mutated);
-    if (k - better > stopCondition) {
+    if (k - better >= stopCondition) {
       break;
     }
   }
