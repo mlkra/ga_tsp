@@ -160,7 +160,13 @@ inline permutation_t generatePermutation(uniform_int_distribution<int> disI3) {
 }
 
 void post(solution_t *solution, std::uniform_int_distribution<int> disI3) {
-  for (int i = 0; i < 1000000; i++) {
+  int m;
+  if (n < 7000) {
+    m = 1000000;
+  } else {
+    m = 20000000;
+  }
+  for (int i = 0; i < m; i++) {
     permutation_t permutation = generatePermutation(disI3);
     double distance = calculateNeighbourDistance(*solution, permutation);
     if (distance < solution->value) {

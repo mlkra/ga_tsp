@@ -10,7 +10,6 @@ using namespace std;
 
 int main(int argc, char const *argv[]) {
   time_t start = time(NULL);
-  // TODO load cities
   loadCities();
   int limit;
   cin >> limit;
@@ -28,7 +27,6 @@ int main(int argc, char const *argv[]) {
     }
     wait(NULL);
   } else {
-    // TODO start evolution
     initializeSearch();
     setupHandler();
     search();

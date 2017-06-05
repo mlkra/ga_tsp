@@ -68,20 +68,42 @@ inline solution_t *copyFromBest() {
 void initializeSearch() {
   calculateDistances();
   theBestSolution = createNEHSolution();
-  // TODO remove
-  cout << theBestSolution.value << endl;
-  cout.flush();
-  disI.param(uniform_int_distribution<>::param_type{2, n-2});
-  populationSize = 30;
-  disI2.param(uniform_int_distribution<>::param_type{0, populationSize - 1});
-  disI3.param(uniform_int_distribution<>::param_type{1, n-1});
-  pairs = populationSize;
+
+  if (n < 200) {
+    populationSize = 30;
+    pairs = populationSize;
+    iterations = 40000;
+  } else if (n < 700) {
+    populationSize = 30;
+    pairs = populationSize * 2;
+    iterations = 20000;
+  } else if (n < 1050) {
+    populationSize = 60;
+    pairs = populationSize;
+    iterations = 20000;
+  } else if (n < 1700) {
+    populationSize = 60;
+    pairs = populationSize;
+    iterations = 10000;
+  } else if (n < 12000) {
+    populationSize = 30;
+    pairs = populationSize;
+    iterations = 2000;
+  } else {
+    populationSize = 30;
+    pairs = populationSize;
+    iterations = 500;
+  }
+
+  mutationP = 0.5;
+  stopCondition = iterations / 4;
+
   crossoverSize = populationSize + (pairs << 1);
   arraySize = (populationSize + (pairs << 1)) << 1;
-  mutationP = 0.5;
   better = 0;
-  iterations = 40000;
-  stopCondition = iterations / 4;
+  disI.param(uniform_int_distribution<>::param_type{2, n-2});
+  disI2.param(uniform_int_distribution<>::param_type{0, populationSize - 1});
+  disI3.param(uniform_int_distribution<>::param_type{1, n-1});
   check1 = new bool[n];
   check2 = new bool[n];
   population = new solution_t*[arraySize];
@@ -261,7 +283,6 @@ void selection(int currentSize) {
 }
 
 void search() {
-  // add some for loop
   for (k = 0; k < iterations; k++) {
     crossover();
     int mutated = mutation();
