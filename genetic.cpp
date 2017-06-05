@@ -56,19 +56,21 @@ void initializeSearch() {
   calculateDistances();
   theBestSolution = createNEHSolution();
   cout << theBestSolution.value;
+  cout.flush();
   disI.param(uniform_int_distribution<>::param_type{2, n-2});
   // TODO change to something more dynamic or don't
   populationSize = 30;
   disI2.param(uniform_int_distribution<>::param_type{0, populationSize - 1});
   disI3.param(uniform_int_distribution<>::param_type{1, n-1});
-  pairs = populationSize * 1.5;
+  pairs = populationSize;
   crossoverSize = populationSize + (pairs << 1);
   arraySize = (populationSize + (pairs << 1)) << 1;
   mutationP = 0.5;
   check1 = new bool[n];
   check2 = new bool[n];
   population = new solution_t*[arraySize];
-  for (int i = 0; i < populationSize; i++) {
+  population[0] = createNEHSolution2();
+  for (int i = 1; i < populationSize; i++) {
     population[i] = createRandomSolution();
   }
   for (int i = populationSize; i < arraySize; i++) {
@@ -193,9 +195,6 @@ int mutation() {
     if (disD(generator) < mutationP) {
       permutation_t permutation = generatePermutation();
       population[i]->value = calculateNeighbourDistance(*population[j], permutation);
-      // TODO there is a better way to do it
-      // memcpy(population[i]->order, population[j]->order, (n + 1) * sizeof(int));
-      // swap(population[i], permutation);
       swap2(population[i], population[j], permutation);
       i++;
     }
@@ -222,7 +221,7 @@ void selection(int currentSize) {
 
 void search() {
   // add some for loop
-  for (int i = 0; i < 20000; i++) {
+  for (int i = 0; i < 80000; i++) {
     crossover();
     int mutated = mutation();
     selection(crossoverSize + mutated);
