@@ -55,7 +55,7 @@ void setupHandler() {
 void initializeSearch() {
   calculateDistances();
   theBestSolution = createNEHSolution();
-  cout << theBestSolution.value;
+  cout << theBestSolution.value << endl;
   cout.flush();
   disI.param(uniform_int_distribution<>::param_type{2, n-2});
   // TODO change to something more dynamic or don't
@@ -221,10 +221,19 @@ void selection(int currentSize) {
 
 void search() {
   // add some for loop
-  for (int i = 0; i < 80000; i++) {
+  for (int i = 0; i < 40000; i++) {
     crossover();
     int mutated = mutation();
     selection(crossoverSize + mutated);
+  }
+
+  for (int i = 0; i < 1000000; i++) {
+    permutation_t permutation = generatePermutation();
+    double distance = calculateNeighbourDistance(theBestSolution, permutation);
+    if (distance < theBestSolution.value) {
+      theBestSolution.value = distance;
+      swap(&theBestSolution, permutation);
+    }
   }
 
   // DEBUG

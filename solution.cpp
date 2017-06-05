@@ -93,6 +93,7 @@ solution_t *createNEHSolution2() {
 
   solution->order = order;
   solution->value = value;
+
   return solution;
 }
 
