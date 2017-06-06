@@ -257,7 +257,7 @@ int compare(const void* p1, const void* p2) {
 void selection(int currentSize) {
   while (currentSize >= (populationSize << 1)) {
     random_shuffle(population, population + currentSize);
-    int halfSize = currentSize / 2;
+    int halfSize = currentSize >> 1;
     for (int i = 0; i < halfSize; i++) {
       solution_t *temp = population[i];
       if (population[(i << 1)]->value > population[(i << 1) + 1]->value) {
